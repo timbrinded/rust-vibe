@@ -1,5 +1,6 @@
-import logoDark from "./logo-dark.svg";
-import logoLight from "./logo-light.svg";
+// Using direct file paths as strings instead of imports for now
+const logoDark = "/logo-dark.svg";
+const logoLight = "/logo-light.svg";
 
 export function Welcome() {
   return (

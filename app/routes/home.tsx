@@ -1,5 +1,6 @@
 import { Welcome } from "../welcome/welcome";
 import { Link } from "react-router";
+import { Button } from "../components/ui/button";
 
 export function meta() {
   return [
@@ -13,12 +14,11 @@ export default function Home() {
     <div>
       <Welcome />
       <div className="text-center mt-8">
-        <Link
-          to="/"
-          className="inline-block px-8 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-full transition-colors shadow-lg font-semibold"
-        >
-          Visit My Rust Fan Page 🦀
-        </Link>
+        <Button asChild size="lg" className="bg-orange-600 hover:bg-orange-700 shadow-lg font-semibold">
+          <Link to="/">
+            Visit My Rust Fan Page 🦀
+          </Link>
+        </Button>
       </div>
     </div>
   );

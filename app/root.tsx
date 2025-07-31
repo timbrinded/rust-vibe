@@ -9,6 +9,7 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { Alert, AlertDescription, AlertTitle } from "./components/ui/alert";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -63,13 +64,17 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
 
   return (
     <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
-          <code>{stack}</code>
-        </pre>
-      )}
+      <Alert variant="destructive" className="max-w-2xl mx-auto">
+        <AlertTitle>{message}</AlertTitle>
+        <AlertDescription>
+          <p>{details}</p>
+          {stack && (
+            <pre className="w-full p-4 overflow-x-auto mt-4 bg-gray-900/50 rounded">
+              <code>{stack}</code>
+            </pre>
+          )}
+        </AlertDescription>
+      </Alert>
     </main>
   );
 }

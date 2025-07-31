@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { Button } from "../components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 
 export function meta() {
   return [
@@ -12,6 +14,9 @@ export default function RustFanPage() {
   const [activeSection, setActiveSection] = useState("features");
   const [quizScore, setQuizScore] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [quizComplete, setQuizComplete] = useState(false);
 
   const features = [
     {
@@ -93,13 +98,39 @@ export default function RustFanPage() {
     },
   ];
 
+  const getRankName = (score: number, total: number) => {
+    const percentage = (score / total) * 100;
+    if (percentage === 100) return "🦀 Rust King Crab";
+    if (percentage >= 67) return "🦀 Crab Person";
+    if (percentage >= 33) return "🥚 Crab Roe";
+    return "🐚 Shell Dweller";
+  };
+
   const handleQuizAnswer = (selectedIndex: number) => {
+    setSelectedAnswer(selectedIndex);
+    setShowFeedback(true);
+    
     if (selectedIndex === quizQuestions[currentQuestion].correct) {
       setQuizScore(quizScore + 1);
     }
+  };
+
+  const handleNextQuestion = () => {
     if (currentQuestion < quizQuestions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
+      setSelectedAnswer(null);
+      setShowFeedback(false);
+    } else {
+      setQuizComplete(true);
     }
+  };
+
+  const resetQuiz = () => {
+    setCurrentQuestion(0);
+    setQuizScore(0);
+    setSelectedAnswer(null);
+    setShowFeedback(false);
+    setQuizComplete(false);
   };
 
   return (
@@ -141,17 +172,19 @@ export default function RustFanPage() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex gap-4 py-4 overflow-x-auto">
             {["features", "why-love", "examples", "ferris", "quiz", "community"].map((section) => (
-              <button
+              <Button
                 key={section}
                 onClick={() => setActiveSection(section)}
-                className={`px-6 py-2 rounded-full transition-all whitespace-nowrap ${
+                variant={activeSection === section ? "default" : "outline"}
+                size="sm"
+                className={`whitespace-nowrap ${
                   activeSection === section
-                    ? "bg-orange-600 text-white shadow-lg"
-                    : "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                    ? "bg-orange-600 hover:bg-orange-700"
+                    : "bg-gray-800/50 hover:bg-gray-700/50 text-gray-300 border-orange-600/30 hover:border-orange-500"
                 }`}
               >
                 {section.charAt(0).toUpperCase() + section.slice(1).replace("-", " ")}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -175,11 +208,16 @@ export default function RustFanPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                   whileHover={{ scale: 1.05 }}
-                  className="bg-gray-800/50 backdrop-blur-sm border border-orange-600/30 rounded-xl p-6 hover:border-orange-500 transition-all"
                 >
-                  <div className="text-4xl mb-4">{feature.icon}</div>
-                  <h3 className="text-xl font-bold mb-2 text-orange-400">{feature.title}</h3>
-                  <p className="text-gray-300">{feature.description}</p>
+                  <Card className="bg-gray-800/50 backdrop-blur-sm border-orange-600/30 hover:border-orange-500 transition-all">
+                    <CardHeader>
+                      <div className="text-4xl mb-2">{feature.icon}</div>
+                      <CardTitle className="text-orange-400">{feature.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <CardDescription className="text-gray-300">{feature.description}</CardDescription>
+                    </CardContent>
+                  </Card>
                 </motion.div>
               ))}
             </div>
@@ -301,43 +339,86 @@ export default function RustFanPage() {
             <h2 className="text-4xl font-bold text-center mb-12">🎯 Test Your Rust Knowledge</h2>
             <div className="max-w-2xl mx-auto">
               <div className="bg-gradient-to-br from-orange-600/20 to-red-600/20 rounded-2xl p-8">
-                {currentQuestion < quizQuestions.length ? (
+                {!quizComplete ? (
                   <>
                     <p className="text-xl mb-6 text-orange-300">
-                      Question {currentQuestion + 1} of {quizQuestions.length}
+                      Question {currentQuestion + 1} of {quizQuestions.length} • Score: {quizScore}
                     </p>
                     <h3 className="text-2xl font-bold mb-6">
                       {quizQuestions[currentQuestion].question}
                     </h3>
                     <div className="space-y-3">
-                      {quizQuestions[currentQuestion].options.map((option, index) => (
-                        <motion.button
-                          key={index}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => handleQuizAnswer(index)}
-                          className="w-full text-left p-4 bg-gray-800/50 hover:bg-gray-700/50 rounded-lg border border-orange-600/30 hover:border-orange-500 transition-all"
-                        >
-                          {option}
-                        </motion.button>
-                      ))}
+                      {quizQuestions[currentQuestion].options.map((option, index) => {
+                        let buttonStyle = "w-full text-left p-4 bg-gray-800/50 rounded-lg border transition-all";
+                        
+                        if (showFeedback && selectedAnswer !== null) {
+                          if (index === quizQuestions[currentQuestion].correct) {
+                            buttonStyle += " bg-green-600/30 border-green-500 text-green-300";
+                          } else if (index === selectedAnswer) {
+                            buttonStyle += " bg-red-600/30 border-red-500 text-red-300";
+                          } else {
+                            buttonStyle += " bg-gray-800/30 border-gray-600 text-gray-400";
+                          }
+                        } else {
+                          buttonStyle += " hover:bg-gray-700/50 border-orange-600/30 hover:border-orange-500";
+                        }
+
+                        return (
+                          <motion.button
+                            key={index}
+                            whileHover={!showFeedback ? { scale: 1.02 } : {}}
+                            whileTap={!showFeedback ? { scale: 0.98 } : {}}
+                            onClick={() => !showFeedback && handleQuizAnswer(index)}
+                            disabled={showFeedback}
+                            className={buttonStyle}
+                          >
+                            {option} {showFeedback && index === quizQuestions[currentQuestion].correct && "✅"}
+                            {showFeedback && index === selectedAnswer && index !== quizQuestions[currentQuestion].correct && "❌"}
+                          </motion.button>
+                        );
+                      })}
                     </div>
+                    
+                    {showFeedback && (
+                      <div className="mt-6 text-center">
+                        <p className="text-lg mb-4">
+                          {selectedAnswer === quizQuestions[currentQuestion].correct 
+                            ? "🎉 Correct! Well done!" 
+                            : "❌ Not quite, but keep learning!"}
+                        </p>
+                        <Button
+                          onClick={handleNextQuestion}
+                          className="bg-orange-600 hover:bg-orange-700"
+                          size="lg"
+                        >
+                          {currentQuestion < quizQuestions.length - 1 ? "Next Question" : "See Results"}
+                        </Button>
+                      </div>
+                    )}
                   </>
                 ) : (
                   <div className="text-center">
-                    <h3 className="text-3xl font-bold mb-4">Quiz Complete!</h3>
-                    <p className="text-xl">
-                      You scored {quizScore} out of {quizQuestions.length}
+                    <h3 className="text-3xl font-bold mb-4">🎯 Quiz Complete!</h3>
+                    <div className="text-6xl mb-4">{getRankName(quizScore, quizQuestions.length).split(' ')[0]}</div>
+                    <h4 className="text-2xl font-bold text-orange-300 mb-4">
+                      {getRankName(quizScore, quizQuestions.length)}
+                    </h4>
+                    <p className="text-xl mb-6">
+                      You scored {quizScore} out of {quizQuestions.length} ({Math.round((quizScore / quizQuestions.length) * 100)}%)
                     </p>
-                    <button
-                      onClick={() => {
-                        setCurrentQuestion(0);
-                        setQuizScore(0);
-                      }}
-                      className="mt-6 px-8 py-3 bg-orange-600 hover:bg-orange-700 rounded-full transition-colors"
+                    <div className="text-lg text-gray-300 mb-6">
+                      {quizScore === quizQuestions.length && "Perfect! You're a true Rustacean! 🦀"}
+                      {quizScore === 2 && "Great job! You know your Rust basics!"}
+                      {quizScore === 1 && "Good start! Keep learning about Rust!"}
+                      {quizScore === 0 && "No worries! Every Rustacean starts somewhere!"}
+                    </div>
+                    <Button
+                      onClick={resetQuiz}
+                      className="bg-orange-600 hover:bg-orange-700"
+                      size="lg"
                     >
                       Try Again
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>
