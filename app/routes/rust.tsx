@@ -463,14 +463,16 @@ export default function RustFanPage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-900 border-t border-orange-600/50 py-12 px-4 text-center">
-        <motion.p
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-          className="text-3xl text-orange-500 mb-4"
-        >
-          🦀 Proud Rustacean Since Forever 🦀
-        </motion.p>
+      <footer className="bg-gray-900 border-t border-orange-600/50 py-12 px-4 text-center overflow-hidden">
+        <div className="max-w-full">
+          <motion.p
+            animate={{ scale: [1, 1.1, 1] }}
+            transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+            className="text-2xl sm:text-3xl text-orange-500 mb-4 max-w-full break-words px-2"
+          >
+            🦀 Proud Rustacean Since Forever 🦀
+          </motion.p>
+        </div>
         <p className="text-gray-400">Made with ❤️ and Rust enthusiasm</p>
       </footer>
     </div>
