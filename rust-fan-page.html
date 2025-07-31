@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rust Programming Language - Fan Page Showcase</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 50%, #ff6b35 100%);
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            text-align: center;
+            max-width: 800px;
+            padding: 40px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            font-size: 3em;
+            margin: 0 0 20px;
+            background: linear-gradient(90deg, #ff6b35, #f7931e);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .rust-logo {
+            font-size: 6em;
+            margin: 20px 0;
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        .description {
+            font-size: 1.2em;
+            line-height: 1.6;
+            margin: 20px 0;
+            color: #ddd;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .feature {
+            background: rgba(255, 107, 53, 0.1);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            transition: transform 0.3s;
+        }
+        .feature:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 107, 53, 0.2);
+        }
+        .links {
+            margin-top: 40px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px;
+            background: #ff6b35;
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            background: #f7931e;
+            transform: scale(1.05);
+        }
+        .secondary-btn {
+            background: transparent;
+            border: 2px solid #ff6b35;
+        }
+        .secondary-btn:hover {
+            background: #ff6b35;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="rust-logo">🦀</div>
+        <h1>Rust Fan Page</h1>
+        <p class="description">
+            Welcome to my passionate tribute to the Rust programming language! 
+            This fan page celebrates everything that makes Rust amazing - from its 
+            blazing performance to its incredible safety guarantees.
+        </p>
+        
+        <div class="features">
+            <div class="feature">
+                <h3>⚡ Fast</h3>
+                <p>Zero-cost abstractions and no garbage collector</p>
+            </div>
+            <div class="feature">
+                <h3>🛡️ Safe</h3>
+                <p>Memory safety without compromising performance</p>
+            </div>
+            <div class="feature">
+                <h3>🤝 Friendly</h3>
+                <p>Amazing community and helpful compiler</p>
+            </div>
+        </div>
+        
+        <div class="links">
+            <a href="http://localhost:5176/" class="btn">View Full React App</a>
+            <a href="http://localhost:5176/rust" class="btn secondary-btn">Go to Rust Fan Page</a>
+        </div>
+        
+        <p style="margin-top: 30px; opacity: 0.7;">
+            Built with React Router v7 and lots of love for Rust 🧡
+        </p>
+    </div>
+</body>
+</html>
