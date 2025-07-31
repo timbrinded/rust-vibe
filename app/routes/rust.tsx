@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useReducer } from "react";
 import { motion } from "framer-motion";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
@@ -10,13 +10,57 @@ export function meta() {
   ];
 }
 
+// Quiz state management types
+type QuizState = {
+  score: number;
+  currentQuestion: number;
+  selectedAnswer: number | null;
+  showFeedback: boolean;
+  isComplete: boolean;
+};
+
+type QuizAction =
+  | { type: 'ANSWER_QUESTION'; selectedIndex: number; isCorrect: boolean }
+  | { type: 'NEXT_QUESTION'; isLastQuestion: boolean }
+  | { type: 'RESET_QUIZ' };
+
+const initialQuizState: QuizState = {
+  score: 0,
+  currentQuestion: 0,
+  selectedAnswer: null,
+  showFeedback: false,
+  isComplete: false,
+};
+
+function quizReducer(state: QuizState, action: QuizAction): QuizState {
+  switch (action.type) {
+    case 'ANSWER_QUESTION':
+      return {
+        ...state,
+        selectedAnswer: action.selectedIndex,
+        showFeedback: true,
+        score: action.isCorrect ? state.score + 1 : state.score,
+      };
+    case 'NEXT_QUESTION':
+      if (action.isLastQuestion) {
+        return { ...state, isComplete: true };
+      }
+      return {
+        ...state,
+        currentQuestion: state.currentQuestion + 1,
+        selectedAnswer: null,
+        showFeedback: false,
+      };
+    case 'RESET_QUIZ':
+      return initialQuizState;
+    default:
+      return state;
+  }
+}
+
 export default function RustFanPage() {
   const [activeSection, setActiveSection] = useState("features");
-  const [quizScore, setQuizScore] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [quizComplete, setQuizComplete] = useState(false);
+  const [quizState, dispatch] = useReducer(quizReducer, initialQuizState);
 
   const features = [
     {
@@ -107,30 +151,24 @@ export default function RustFanPage() {
   };
 
   const handleQuizAnswer = (selectedIndex: number) => {
-    setSelectedAnswer(selectedIndex);
-    setShowFeedback(true);
-    
-    if (selectedIndex === quizQuestions[currentQuestion].correct) {
-      setQuizScore(quizScore + 1);
-    }
+    const isCorrect = selectedIndex === quizQuestions[quizState.currentQuestion].correct;
+    dispatch({ 
+      type: 'ANSWER_QUESTION', 
+      selectedIndex, 
+      isCorrect 
+    });
   };
 
   const handleNextQuestion = () => {
-    if (currentQuestion < quizQuestions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      setSelectedAnswer(null);
-      setShowFeedback(false);
-    } else {
-      setQuizComplete(true);
-    }
+    const isLastQuestion = quizState.currentQuestion >= quizQuestions.length - 1;
+    dispatch({ 
+      type: 'NEXT_QUESTION', 
+      isLastQuestion 
+    });
   };
 
   const resetQuiz = () => {
-    setCurrentQuestion(0);
-    setQuizScore(0);
-    setSelectedAnswer(null);
-    setShowFeedback(false);
-    setQuizComplete(false);
+    dispatch({ type: 'RESET_QUIZ' });
   };
 
   return (
@@ -339,22 +377,22 @@ export default function RustFanPage() {
             <h2 className="text-4xl font-bold text-center mb-12">🎯 Test Your Rust Knowledge</h2>
             <div className="max-w-2xl mx-auto">
               <div className="bg-gradient-to-br from-orange-600/20 to-red-600/20 rounded-2xl p-8">
-                {!quizComplete ? (
+                {!quizState.isComplete ? (
                   <>
                     <p className="text-xl mb-6 text-orange-300">
-                      Question {currentQuestion + 1} of {quizQuestions.length} • Score: {quizScore}
+                      Question {quizState.currentQuestion + 1} of {quizQuestions.length} • Score: {quizState.score}
                     </p>
                     <h3 className="text-2xl font-bold mb-6">
-                      {quizQuestions[currentQuestion].question}
+                      {quizQuestions[quizState.currentQuestion].question}
                     </h3>
                     <div className="space-y-3">
-                      {quizQuestions[currentQuestion].options.map((option, index) => {
+                      {quizQuestions[quizState.currentQuestion].options.map((option, index) => {
                         let buttonStyle = "w-full text-left p-4 bg-gray-800/50 rounded-lg border transition-all";
                         
-                        if (showFeedback && selectedAnswer !== null) {
-                          if (index === quizQuestions[currentQuestion].correct) {
+                        if (quizState.showFeedback && quizState.selectedAnswer !== null) {
+                          if (index === quizQuestions[quizState.currentQuestion].correct) {
                             buttonStyle += " bg-green-600/30 border-green-500 text-green-300";
-                          } else if (index === selectedAnswer) {
+                          } else if (index === quizState.selectedAnswer) {
                             buttonStyle += " bg-red-600/30 border-red-500 text-red-300";
                           } else {
                             buttonStyle += " bg-gray-800/30 border-gray-600 text-gray-400";
@@ -366,23 +404,23 @@ export default function RustFanPage() {
                         return (
                           <motion.button
                             key={index}
-                            whileHover={!showFeedback ? { scale: 1.02 } : {}}
-                            whileTap={!showFeedback ? { scale: 0.98 } : {}}
-                            onClick={() => !showFeedback && handleQuizAnswer(index)}
-                            disabled={showFeedback}
+                            whileHover={!quizState.showFeedback ? { scale: 1.02 } : {}}
+                            whileTap={!quizState.showFeedback ? { scale: 0.98 } : {}}
+                            onClick={() => !quizState.showFeedback && handleQuizAnswer(index)}
+                            disabled={quizState.showFeedback}
                             className={buttonStyle}
                           >
-                            {option} {showFeedback && index === quizQuestions[currentQuestion].correct && "✅"}
-                            {showFeedback && index === selectedAnswer && index !== quizQuestions[currentQuestion].correct && "❌"}
+                            {option} {quizState.showFeedback && index === quizQuestions[quizState.currentQuestion].correct && "✅"}
+                            {quizState.showFeedback && index === quizState.selectedAnswer && index !== quizQuestions[quizState.currentQuestion].correct && "❌"}
                           </motion.button>
                         );
                       })}
                     </div>
                     
-                    {showFeedback && (
+                    {quizState.showFeedback && (
                       <div className="mt-6 text-center">
                         <p className="text-lg mb-4">
-                          {selectedAnswer === quizQuestions[currentQuestion].correct 
+                          {quizState.selectedAnswer === quizQuestions[quizState.currentQuestion].correct 
                             ? "🎉 Correct! Well done!" 
                             : "❌ Not quite, but keep learning!"}
                         </p>
@@ -391,7 +429,7 @@ export default function RustFanPage() {
                           className="bg-orange-600 hover:bg-orange-700"
                           size="lg"
                         >
-                          {currentQuestion < quizQuestions.length - 1 ? "Next Question" : "See Results"}
+                          {quizState.currentQuestion < quizQuestions.length - 1 ? "Next Question" : "See Results"}
                         </Button>
                       </div>
                     )}
@@ -399,18 +437,18 @@ export default function RustFanPage() {
                 ) : (
                   <div className="text-center">
                     <h3 className="text-3xl font-bold mb-4">🎯 Quiz Complete!</h3>
-                    <div className="text-6xl mb-4">{getRankName(quizScore, quizQuestions.length).split(' ')[0]}</div>
+                    <div className="text-6xl mb-4">{getRankName(quizState.score, quizQuestions.length).split(' ')[0]}</div>
                     <h4 className="text-2xl font-bold text-orange-300 mb-4">
-                      {getRankName(quizScore, quizQuestions.length)}
+                      {getRankName(quizState.score, quizQuestions.length)}
                     </h4>
                     <p className="text-xl mb-6">
-                      You scored {quizScore} out of {quizQuestions.length} ({Math.round((quizScore / quizQuestions.length) * 100)}%)
+                      You scored {quizState.score} out of {quizQuestions.length} ({Math.round((quizState.score / quizQuestions.length) * 100)}%)
                     </p>
                     <div className="text-lg text-gray-300 mb-6">
-                      {quizScore === quizQuestions.length && "Perfect! You're a true Rustacean! 🦀"}
-                      {quizScore === 2 && "Great job! You know your Rust basics!"}
-                      {quizScore === 1 && "Good start! Keep learning about Rust!"}
-                      {quizScore === 0 && "No worries! Every Rustacean starts somewhere!"}
+                      {quizState.score === quizQuestions.length && "Perfect! You're a true Rustacean! 🦀"}
+                      {quizState.score === 2 && "Great job! You know your Rust basics!"}
+                      {quizState.score === 1 && "Good start! Keep learning about Rust!"}
+                      {quizState.score === 0 && "No worries! Every Rustacean starts somewhere!"}
                     </div>
                     <Button
                       onClick={resetQuiz}
@@ -445,17 +483,22 @@ export default function RustFanPage() {
                 { name: "Discord Server", url: "https://discord.gg/rust-lang" },
                 { name: "Crates.io", url: "https://crates.io/" },
               ].map((link, index) => (
-                <motion.a
+                <Button
                   key={index}
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-8 py-3 bg-orange-600 hover:bg-orange-700 rounded-full transition-colors shadow-lg"
+                  asChild
+                  size="lg"
+                  className="bg-orange-600 hover:bg-orange-700 shadow-lg"
                 >
-                  {link.name}
-                </motion.a>
+                  <motion.a
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    {link.name}
+                  </motion.a>
+                </Button>
               ))}
             </div>
           </motion.section>
